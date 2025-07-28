@@ -21,4 +21,6 @@ This is a Streamlit web app that checks how well your resume matches a job descr
 - 🐍 Python + Streamlit
 
 ## 👩‍💻 Author
-Shreyanshi Srivastava | smartfresherhubsa@gmail.com
+Shivam Kumar Dubey 
+Shreyanshi Srivastava 
+smartfresherhubsa@gmail.com
