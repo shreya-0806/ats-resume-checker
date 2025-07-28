@@ -13,7 +13,7 @@ This is a Streamlit web app that checks how well your resume matches a job descr
 - Download a detailed report
 
 ## 🌐 Live App
-🔗 [Open on Streamlit](https://ats-resume-checker-smart-fresher-sa.streamlit.app/)
+🔗 [Open on our Website]((https://smart-fresher-sa.great-site.net/))
 
 ## 🧠 Powered by
 - 🔤 [NLTK](https://www.nltk.org/)
