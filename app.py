@@ -3,6 +3,7 @@ import streamlit as st
 from dotenv import load_dotenv
 import cohere
 import nltk
+nltk.data.path.append("nltk_data")
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from PyPDF2 import PdfReader
