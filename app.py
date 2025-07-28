@@ -13,6 +13,7 @@ from io import BytesIO
 
 load_dotenv()
 nltk.download('punkt')
+nltk.data.path.append("nltk_data")
 nltk.download('stopwords')
 
 # Initialize Cohere
