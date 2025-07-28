@@ -8,12 +8,11 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from PyPDF2 import PdfReader
 import docx
+import re
 from fpdf import FPDF
 from io import BytesIO
 
 load_dotenv()
-nltk.download('punkt')
-nltk.data.path.append("nltk_data")
 nltk.download('stopwords')
 
 # Initialize Cohere
@@ -32,10 +31,13 @@ def extract_text_from_docx(file):
     doc = docx.Document(file)
     return " ".join(para.text for para in doc.paragraphs)
 
+
 def clean_tokens(text):
     stop = set(stopwords.words("english"))
-    tokens = word_tokenize(text.lower())
-    return [w for w in tokens if w.isalnum() and w not in stop]
+    # Simple regex tokenizer to split by words
+    tokens = re.findall(r'\b\w+\b', text.lower())
+    return [w for w in tokens if w not in stop]
+
 
 def get_resume_suggestions_cohere(text):
     prompt = (
