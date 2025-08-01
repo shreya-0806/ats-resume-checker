@@ -1,26 +1,51 @@
 # ATS Resume Checker 🔍📄
 
-This is a Streamlit web app that checks how well your resume matches a job description. It gives:
-- ✅ ATS Match Score
-- 🧠 GPT-based Resume Suggestions
-- 💼 Tech & Soft Skill detection
-- 📥 Downloadable PDF Report
+A smart and simple Streamlit web app to check how well your resume matches a job description using AI.
+
+---
 
 ## 🚀 Features
-- Upload resume (.pdf or .docx)
-- Paste job description
-- See your ATS match % instantly
-- Download a detailed report
 
-## 🌐 Live App
-🔗 [Open on our Website](https://smart-fresher-sa.great-site.net/)
+✅ ATS Match Score  
+🧠 GPT-based Resume Suggestions  
+💼 Tech & Soft Skill Detection  
+🧩 Resume Section Identification  
+✍️ Grammar Feedback  
+📥 Downloadable PDF Report  
 
-## 🧠 Powered by
-- 🔤 [NLTK](https://www.nltk.org/)
-- 💬 [Cohere AI](https://cohere.ai/)
-- 🐍 Python + Streamlit
+---
 
-## 👩‍💻 Author
-Shivam Kumar Dubey 
-Shreyanshi Srivastava 
-smartfresherhubsa@gmail.com
+## 📄 How It Works
+
+1. **Upload your resume** (.pdf or .docx)  
+2. **Paste the job description**  
+3. **Click to analyze**  
+4. View your score and download a detailed PDF report
+
+---
+
+## 🌐 Live App  
+🔗 [Visit the Website](https://smart-fresher-sa.great-site.net/) 
+
+---
+
+## 🧠 Powered By
+
+- 🐍 Python + Streamlit  
+- 🔤 NLTK  
+- 💬 Cohere AI  
+- 🔍 Fuzzy Matching  
+- 📊 NLP Techniques  
+
+---
+
+## 👩‍💻 Authors
+
+**Shivam Kumar Dubey**  
+**Shreyanshi Srivastava**  
+📧 smartfresherhubsa@gmail.com
+
+---
+
+© 2025 Smart Fresher Hub — Build your career with confidence.
+
