@@ -1,10 +1,10 @@
 streamlit
-PyPDF2
-python-docx
 nltk
-fpdf
-google-generativeai
-python-dotenv
 cohere
-# --- requirements.txt ---
-# This file lists the Python packages required for the ATS Checker application.
+python-docx
+pdfplumber
+pytesseract
+Pillow
+python-dotenv
+fuzzywuzzy
+python-Levenshtein
