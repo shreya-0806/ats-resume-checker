@@ -1,4 +1,4 @@
-# Updated app.py with all fixes applied and real grammar checking
+# Updated app.py with grammar checking removed
 import os
 import streamlit as st
 from dotenv import load_dotenv
@@ -15,7 +15,6 @@ import pytesseract
 from PIL import Image
 from pdfplumber import open as pdfplumber_open
 
-from grammar_checker import check_grammar
 from section_detection import detect_sections
 from alignment_checker import get_alignment_score
 from keywords_by_course import TECH_KEYWORDS_BY_COURSE, SOFT_SKILLS_BY_COURSE, MULTIWORD_KEYWORDS_BY_COURSE, GENERIC_KEYWORDS
@@ -130,8 +129,6 @@ if resume_file and job_desc_text and st.button("🔍 Check ATS Score"):
     found_sections, missing_sections = detect_sections(resume_text)
     st.info("🌟 Checking alignment with job role…")
     alignment_score = get_alignment_score(resume_text, job_desc_text)
-    st.info("✍️ Checking grammar…")
-    grammar_issues = check_grammar(resume_text)
 
     st.markdown("### 📊 Matching Summary")
     st.success(f"✅ ATS Match Score\n\n{match_percent:.2f}%")
@@ -154,9 +151,6 @@ if resume_file and job_desc_text and st.button("🔍 Check ATS Score"):
     st.markdown("### 🧹 Resume Section Detection")
     st.success(f"✅ Found Sections: {', '.join(found_sections).title() or 'None'}")
     st.error(f"❌ Missing Sections: {', '.join(missing_sections).title() or 'None'}")
-
-    st.markdown("### ✍️ Grammar Feedback")
-    st.write(grammar_issues or "None")
 
     st.markdown("### ✨ Suggestions")
     st.write(suggestions)
