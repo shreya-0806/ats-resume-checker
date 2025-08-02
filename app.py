@@ -1,36 +1,35 @@
+# Updated app.py with all fixes applied and real grammar checking
 import os
 import streamlit as st
 from dotenv import load_dotenv
+load_dotenv()
 import cohere
 import nltk
 nltk.data.path.append("nltk_data")
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-from fuzzywuzzy import fuzz
 import re
 import docx
 import pytesseract
 from PIL import Image
-import pdfplumber
+from pdfplumber import open as pdfplumber_open
 
 from grammar_checker import check_grammar
 from section_detection import detect_sections
+from alignment_checker import get_alignment_score
 from keywords_by_course import TECH_KEYWORDS_BY_COURSE, SOFT_SKILLS_BY_COURSE, MULTIWORD_KEYWORDS_BY_COURSE, GENERIC_KEYWORDS
 
-# Initial setup
-load_dotenv()
 nltk.download('stopwords')
 nltk.download('wordnet')
 nltk.download('omw-1.4')
 
 lemmatizer = WordNetLemmatizer()
 co = cohere.Client(os.getenv("COHERE_API_KEY"))
+
 st.set_page_config(page_title="ATS Resume Checker", page_icon="📄")
 st.title("📄 ATS Resume Checker (Enhanced)")
 
-# --- Course Selection ---
-st.markdown("👋 Start by selecting your course or domain to get tailored keyword matching and suggestions.")
 course_options = list(TECH_KEYWORDS_BY_COURSE.keys())
 selected_course = st.selectbox(
     "🎓 Select Your Course / Domain",
@@ -50,10 +49,10 @@ GENERIC_WORDS = GENERIC_KEYWORDS.get(selected_course, set())
 # --- Helpers ---
 def extract_text_from_pdf(file):
     try:
-        with pdfplumber.open(file) as pdf:
-            text = " ".join(page.extract_text() or "" for page in pdf.pages)
+        with pdfplumber_open(file) as pdf:
+            text = "\n".join([page.extract_text() or "" for page in pdf.pages])
         if not text.strip():
-            raise ValueError("No text extracted, trying OCR fallback...")
+            raise ValueError("No text extracted, try OCR fallback")
         return text
     except:
         try:
@@ -72,27 +71,30 @@ def clean_tokens(text):
     filtered = [lemmatizer.lemmatize(w) for w in tokens if w.isalnum() and w not in stop]
     return filtered, " ".join(filtered)
 
-def lemmatize_tokens(tokens):
-    return [lemmatizer.lemmatize(token) for token in tokens]
+def extract_jd_keywords(jd_text):
+    tokens, _ = clean_tokens(jd_text)
+    return set([lemmatizer.lemmatize(w) for w in tokens if len(w) > 2])
 
-def match_skills(skills_list, text_tokens, text_full, threshold=85):
+def extract_resume_keywords(resume_text):
+    tokens, _ = clean_tokens(resume_text)
+    return set([lemmatizer.lemmatize(w) for w in tokens if len(w) > 2])
+
+def match_keywords(resume_keywords, jd_keywords, multiword_keywords):
     matched = []
-    for skill in skills_list:
-        lemmatized = " ".join([lemmatizer.lemmatize(w) for w in skill.lower().split()])
-        if lemmatized in text_full:
-            matched.append(skill)
-            continue
-        for word in text_tokens:
-            if fuzz.partial_ratio(skill.lower(), word.lower()) >= threshold:
-                matched.append(skill)
-                break
-    return sorted(set(matched))
+    for kw in jd_keywords:
+        if kw.lower() in resume_keywords:
+            matched.append(kw.lower())
+    for phrase in multiword_keywords:
+        if phrase.lower() in resume_text.lower():
+            matched.append(phrase.lower())
+    return list(set(matched))
 
 def get_resume_suggestions_cohere(text):
     prompt = (
-        "You are an ATS optimization expert. Below is a resume. "
-        "Give 3 bullet points to improve it. Focus on missing keywords, sections, formatting.\n\n"
-        f"{text}\n\nYour suggestions:"
+        "You are an ATS optimization expert. Below is a resume. Give only 3 concise bullet points to improve it. "
+        "Focus on adding missing keywords, section improvements, or formatting. Do NOT rewrite the resume.\n\n"
+        f"{text}\n\n"
+        "Your suggestions:"
     )
     resp = co.chat(model="command-r-plus", message=prompt, max_tokens=300, temperature=0.7)
     return resp.text.strip()
@@ -107,84 +109,49 @@ def get_semantic_similarity(resume, jobdesc):
         return round((dot / (norm_r * norm_j)) * 100, 2)
     return 0.0
 
-def get_alignment_score(resume_text, job_desc_text, jd_keywords, matched_keywords):
-    semantic_score = get_semantic_similarity(resume_text, job_desc_text)
-    keyword_overlap = len(set(jd_keywords) & set(matched_keywords))
-    alignment_score = (semantic_score * 0.7) + ((keyword_overlap / len(jd_keywords)) * 100 * 0.3) if jd_keywords else semantic_score
-    return round(alignment_score, 2)
-
 # --- Main App ---
 resume_file = st.file_uploader("Upload Resume (PDF or DOCX)", type=["pdf", "docx"])
 job_desc_text = st.text_area("Paste Job Description Here", height=200, placeholder="Copy and paste the job description...")
 
 if resume_file and job_desc_text and st.button("🔍 Check ATS Score"):
     resume_text = extract_text_from_pdf(resume_file) if resume_file.name.endswith(".pdf") else extract_text_from_docx(resume_file)
-    resume_tokens, resume_cleaned = clean_tokens(resume_text)
-    resume_joined = " ".join(resume_tokens)
-    jd_tokens, jd_cleaned = clean_tokens(job_desc_text)
+    resume_keywords = extract_resume_keywords(resume_text)
+    jd_keywords = extract_jd_keywords(job_desc_text)
 
-    # Prepare JD Skills
-    jd_lemmas = set(lemmatize_tokens(jd_tokens))
-    resume_lemmas = set(lemmatize_tokens(resume_tokens))
-    matched = resume_lemmas & jd_lemmas
-    missing = jd_lemmas - resume_lemmas
-    relevant_phrases = [p for p in multiword_phrases if p in jd_cleaned]
-    all_jd_skills = list(set(jd_tokens + relevant_phrases))
-    all_matched = match_skills(all_jd_skills, resume_tokens, resume_joined)
-    all_missing = sorted(set(all_jd_skills) - set(all_matched))
+    matched_keywords = match_keywords(resume_keywords, jd_keywords, multiword_phrases)
+    total_keywords = jd_keywords.union(set(multiword_phrases))
+    match_percent = round((len(set(matched_keywords)) / len(total_keywords)) * 100, 2) if total_keywords else 0
 
-        # Important keywords from JD for scoring
-    important_keywords = set(tech_keywords + soft_skills + multiword_phrases)
-    scorable_keywords = [
-        kw for kw in all_jd_skills
-        if kw.lower() in [w.lower() for w in important_keywords]
-        and kw.lower() not in [g.lower() for g in GENERIC_WORDS]
-        and len(kw) > 2
-    ]
-
-    # Actual matched keywords
-    matched_scorables = [
-        kw for kw in scorable_keywords
-        if any(fuzz.partial_ratio(kw.lower(), token.lower()) >= 85 for token in resume_tokens)
-    ]
-
-    match_percent = round((len(matched_scorables) / len(scorable_keywords)) * 100, 2) if scorable_keywords else 0
-
-
-    tech_found = match_skills(tech_keywords, resume_tokens, resume_joined)
-    soft_found = match_skills(soft_skills, resume_tokens, resume_joined)
-
-    st.info("💬 Generating suggestions using Cohere…")
+    st.info("🗨️ Generating suggestions using Cohere…")
     suggestions = get_resume_suggestions_cohere(resume_text)
-    st.info("🧠 Calculating semantic similarity…")
+    st.info("🧐 Calculating semantic similarity…")
     semantic_score = get_semantic_similarity(resume_text, job_desc_text)
-    st.info("🧩 Detecting sections…")
+    st.info("🧹 Detecting sections…")
     found_sections, missing_sections = detect_sections(resume_text)
-    st.info("🎯 Checking alignment with job role…")
-    alignment_score = get_alignment_score(resume_text, job_desc_text, all_jd_skills, all_matched)
+    st.info("🌟 Checking alignment with job role…")
+    alignment_score = get_alignment_score(resume_text, job_desc_text)
     st.info("✍️ Checking grammar…")
     grammar_issues = check_grammar(resume_text)
 
-    # --- Results ---
-    st.markdown("## 📊 Matching Summary")
+    st.markdown("### 📊 Matching Summary")
     st.success(f"✅ ATS Match Score\n\n{match_percent:.2f}%")
-    st.success(f"🧠 Semantic Similarity\n\n{semantic_score:.2f}%")
-    st.success(f"🎯 Job Role Alignment Score\n\n{alignment_score:.2f}%")
+    st.success(f"🧐 Semantic Similarity\n\n{semantic_score:.2f}%")
+    st.success(f"🌟 Job Role Alignment Score\n\n{alignment_score:.2f}%")
 
     st.markdown("### ✅ Matched Keywords")
-    st.write(", ".join(sorted(all_matched)) or "None")
+    st.write(", ".join(sorted(set(matched_keywords))) or "None")
 
     st.markdown("### ❌ Missing Keywords")
-    filtered_missing = [kw for kw in all_missing if kw in important_keywords and kw not in GENERIC_WORDS and len(kw) > 2]
-    st.write(", ".join(sorted(filtered_missing)) or "None")
+    missing_keywords = sorted(total_keywords - set(matched_keywords))
+    st.write(", ".join(missing_keywords) or "None")
 
     st.markdown("### 💻 Technical Skills")
-    st.write(", ".join(tech_found) or "None")
+    st.write(", ".join(match_keywords(resume_keywords, tech_keywords, [])) or "None")
 
-    st.markdown("### 🧠 Soft Skills")
-    st.write(", ".join(soft_found) or "None")
+    st.markdown("### 🧐 Soft Skills")
+    st.write(", ".join(match_keywords(resume_keywords, soft_skills, [])) or "None")
 
-    st.markdown("### 🧩 Resume Section Detection")
+    st.markdown("### 🧹 Resume Section Detection")
     st.success(f"✅ Found Sections: {', '.join(found_sections).title() or 'None'}")
     st.error(f"❌ Missing Sections: {', '.join(missing_sections).title() or 'None'}")
 

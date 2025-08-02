@@ -8,3 +8,5 @@ Pillow
 python-dotenv
 fuzzywuzzy
 python-Levenshtein
+spacy
+language_tool_python
