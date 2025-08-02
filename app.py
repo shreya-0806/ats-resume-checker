@@ -134,21 +134,23 @@ if resume_file and job_desc_text and st.button("🔍 Check ATS Score"):
     all_missing = sorted(set(all_jd_skills) - set(all_matched))
 
         # Important keywords from JD for scoring
-    important_keywords = set(tech_keywords + soft_skills + multiword_phrases)
+    important_keywords = set([kw.lower() for kw in tech_keywords + soft_skills + multiword_phrases])
     scorable_keywords = [
-        kw for kw in all_jd_skills
-        if kw.lower() in [w.lower() for w in important_keywords]
-        and kw.lower() not in [g.lower() for g in GENERIC_WORDS]
-        and len(kw) > 2
-    ]
+      kw for kw in all_jd_skills
+      if kw.lower() in important_keywords
+      and kw.lower() not in [g.lower() for g in GENERIC_WORDS]
+      and len(kw) > 2
+ ]
 
-    # Actual matched keywords
-    matched_scorables = [
-        kw for kw in scorable_keywords
-        if any(fuzz.partial_ratio(kw.lower(), token.lower()) >= 85 for token in resume_tokens)
-    ]
+    matched_scorables = []
+     for kw in scorable_keywords:
+      for token in resume_tokens:
+        if fuzz.partial_ratio(kw.lower(), token.lower()) >= 85:
+            matched_scorables.append(kw)
+            break  # No need to check more tokens once matched
 
-    match_percent = round((len(matched_scorables) / len(scorable_keywords)) * 100, 2) if scorable_keywords else 0
+     match_percent = round((len(matched_scorables) / len(scorable_keywords)) * 100, 2) if scorable_keywords else 0
+
 
 
     tech_found = match_skills(tech_keywords, resume_tokens, resume_joined)
