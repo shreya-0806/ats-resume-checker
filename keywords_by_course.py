@@ -1,13 +1,18 @@
-# keywords_by_course.py
+# Updated keywords_by_course.py with more QA and Data Science keywords
 
 TECH_KEYWORDS_BY_COURSE = {
     "programming": [
         "python", "java", "c++", "html", "css", "javascript", "react", "django", "flask",
-        "api development", "git", "github", "oop", "web development", "software engineering"
+        "api development", "git", "github", "oop", "web development", "software engineering",
+              "selenium", "manual testing", "automation testing", "regression testing", "test cases",
+           "test scenario", "xpath", "css selectors", "bug tracking", "jira", "webdriver",
+        "defect tracking", "functional testing", "test script", "github", "version control",
+        "test plan", "integration testing", "qa reporting"
     ],
     "data_analytics": [
         "data analysis", "data visualization", "machine learning", "python", "excel",
-        "statistical analysis", "power bi", "tableau", "sql"
+        "statistical analysis", "power bi", "tableau", "sql",
+        "pandas", "numpy", "matplotlib", "jupyter notebook", "regression"
     ],
     "cybersecurity": [
         "network security", "ethical hacking", "firewall", "penetration testing", "malware analysis",
@@ -41,6 +46,7 @@ TECH_KEYWORDS_BY_COURSE = {
 SOFT_SKILLS_BY_COURSE = {
     "programming": ["problem-solving", "communication", "teamwork", "adaptability"],
     "data_analytics": ["critical thinking", "attention to detail", "presentation skills"],
+    "qa_testing": ["attention to detail", "logical thinking", "collaboration", "documentation"],
     "cybersecurity": ["integrity", "vigilance", "analytical thinking"],
     "civil_engineering": ["project coordination", "teamwork", "time management"],
     "mechanical_engineering": ["troubleshooting", "collaboration", "attention to detail"],
@@ -54,6 +60,7 @@ SOFT_SKILLS_BY_COURSE = {
 MULTIWORD_KEYWORDS_BY_COURSE = {
     "programming": ["object oriented programming", "version control", "responsive design"],
     "data_analytics": ["data mining", "predictive modeling", "statistical analysis"],
+    "qa_testing": ["test automation", "bug tracking", "quality assurance", "manual testing", "automation framework"],
     "cybersecurity": ["penetration testing", "incident response", "security audit"],
     "civil_engineering": ["construction project", "structural analysis", "building planning"],
     "mechanical_engineering": ["thermal systems", "finite element analysis", "machine design"],
@@ -68,6 +75,7 @@ GENERIC_KEYWORDS = {
     "default": {"includes", "meet", "fully", "friendly", "standard", "creating", "additionally", "ensure", "using", "perform"},
     "programming": {"code", "coding", "debug"},
     "data_analytics": {"report", "reporting", "insights"},
+    "qa_testing": {"tool", "testing", "test", "software"},
     "pharma": {"health", "patient", "medicine"},
     "civil_engineering": {"plan", "structure"},
     "mechanical_engineering": {"system", "design"},
